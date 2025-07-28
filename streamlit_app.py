@@ -26,7 +26,6 @@ st.markdown("""
 
     .user-message {
         background-color: #f0f0f0;
-        border: 1px solid #d1d5db;
         border-radius: 18px;
         padding: 12px 16px;
         margin: 8px 0 8px auto;
@@ -72,7 +71,7 @@ st.markdown("""
         margin: 0 !important;
     }
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=False)
 
 # ─── Title ────────────────────────────────────────────────────────────────────
 st.markdown('<h1 class="main-title">What\'s on the agenda today?</h1>', unsafe_allow_html=True)
