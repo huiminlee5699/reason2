@@ -115,7 +115,7 @@ st.markdown("""
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     /* Hide default Streamlit chat styling */
     .stChatMessage {
         background: none !important;
@@ -129,6 +129,7 @@ st.markdown("""
         background: none !important;
         border: none !important;
         padding: 0 !important;
+        margin: 0 !important;
     }
     
     /* Auto-expanding chat input */
@@ -153,91 +154,6 @@ st.markdown("""
         padding-left: 2rem;
         padding-right: 2rem;
     }
-    
-    /* Interactive reasoning dropdown styling */
-    .reasoning-toggle-container {
-        background-color: #f8f9fa;
-        border: 1px solid #e1e5e9;
-        border-radius: 8px;
-        margin: 16px 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-    
-    .reasoning-toggle-header {
-        padding: 12px 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        transition: background-color 0.2s;
-        font-size: 14px;
-        color: #6b7280;
-        font-weight: 500;
-        border: none;
-        width: 100%;
-        text-align: left;
-    }
-    
-    .reasoning-toggle-header:hover {
-        background-color: #f1f3f4;
-        color: #4b5563;
-    }
-    
-    .reasoning-content {
-        max-height: 400px;
-        overflow-y: auto;
-        border-top: 1px solid #e1e5e9;
-        background-color: #f8f9fa;
-        border-radius: 0 0 8px 8px;
-    }
-    
-    .reasoning-step {
-        margin: 12px 16px;
-        padding: 12px;
-        background-color: #ffffff;
-        border-radius: 6px;
-        border-left: 3px solid #e1e5e9;
-        line-height: 1.5;
-        font-size: 16px;
-        color: #2d2d2d;
-        animation: fadeIn 0.3s ease-in;
-    }
-    
-    .thinking-indicator {
-        padding: 16px;
-        text-align: center;
-        color: #6b7280;
-        font-style: italic;
-        background-color: #f8f9fa;
-    }
-    
-    .chevron {
-        transition: transform 0.2s;
-        font-size: 12px;
-    }
-    
-    .chevron.expanded {
-        transform: rotate(180deg);
-    }
-    
-    /* Style for Streamlit buttons to make them invisible */
-    .reasoning-button {
-        background: none !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        width: 100% !important;
-    }
-    
-    .reasoning-button > div {
-        background: none !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -255,78 +171,45 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "current_reasoning_history" not in st.session_state:
     st.session_state.current_reasoning_history = []
+# (retain the old toggles state even though we no longer use it)
+if "show_reasoning" not in st.session_state:
+    st.session_state.show_reasoning = {}
+if "live_reasoning" not in st.session_state:
+    st.session_state.live_reasoning = {}
 if "reasoning_step_counter" not in st.session_state:
     st.session_state.reasoning_step_counter = 0
-if "show_reasoning" not in st.session_state:
-    st.session_state.show_reasoning = {}  # Track which messages have reasoning expanded
-if "live_reasoning" not in st.session_state:
-    st.session_state.live_reasoning = {}  # Track live reasoning for current generation
 
 # Display existing messages with custom styling
 for i, message in enumerate(st.session_state.messages):
-    message_key = f"msg_{i}"
-    
     if message["role"] == "user":
-        # User message - right aligned, light grey
         st.markdown(f"""
         <div class="user-message">
             {message["content"]}
         </div>
         """, unsafe_allow_html=True)
     else:
-        # Assistant message - left aligned
         st.markdown(f"""
         <div class="assistant-message">
             {message["content"]}
         </div>
         """, unsafe_allow_html=True)
-        
-        # If it's an assistant message with reasoning, show the interactive dropdown
+
+        # --- REPLACED: Manual CSS dropdown with st.expander ---
         if "reasoning" in message:
             thinking_duration = message.get("thinking_duration", 0)
-            
-            # Create the reasoning toggle container
-            st.markdown(f"""
-            <div class="reasoning-toggle-container">
-            """, unsafe_allow_html=True)
-            
-            # Create columns for the toggle button
-            col1, col2 = st.columns([1, 0.1])
-            
-            with col1:
-                # Toggle button for reasoning
-                is_expanded = st.session_state.show_reasoning.get(message_key, False)
-                chevron = "▼" if is_expanded else "▶"
-                
-                if st.button(f"{chevron} Thought for {thinking_duration} seconds", 
-                           key=f"reasoning_toggle_{message_key}",
-                           help="Click to show/hide reasoning"):
-                    st.session_state.show_reasoning[message_key] = not is_expanded
-                    st.rerun()
-            
-            # Show reasoning content if expanded
-            if st.session_state.show_reasoning.get(message_key, False):
-                st.markdown('<div class="reasoning-content">', unsafe_allow_html=True)
-                
-                for j, step in enumerate(message["reasoning"], 1):
+            with st.expander(f"💭 Thought for {thinking_duration} seconds", expanded=False):
+                for j, step in enumerate(message["reasoning"], start=1):
                     st.markdown(f"""
                     <div class="reasoning-step">
                         <strong>Step {j}:</strong> {step}
                     </div>
                     """, unsafe_allow_html=True)
-                
-                # Add "Done" indicator at the end
                 st.markdown("""
-                <div class="done-indicator" style="margin: 12px 16px 16px 16px;">
+                <div class="done-indicator">
                     ✓ Done
                 </div>
                 """, unsafe_allow_html=True)
-                
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Add action buttons (copy, upvote, downvote)
+            # (you can leave your action-buttons here if you still want them)
             st.markdown("""
             <div class="action-buttons">
                 <button class="action-button" onclick="navigator.clipboard.writeText(document.querySelector('.assistant-message').innerText)" title="Copy">
@@ -356,76 +239,40 @@ if prompt := st.chat_input("Ask anything..."):
     # Reset reasoning history for new conversation
     st.session_state.current_reasoning_history = []
     st.session_state.reasoning_step_counter += 1
+    # (we keep current_msg_key around, though expander no longer needs it)
     current_msg_key = f"msg_live_{st.session_state.reasoning_step_counter}"
     
     # Generate reasoning steps for the credibility task
     reasoning_steps = generate_reasoning_steps_for_credibility_task()
     
-    # Track timing for the "Thought for X seconds" feature
+    # Track timing for the "Thinking..." feature
     start_time = time.time()
     
-    # Create the interactive reasoning container during generation
-    st.markdown(f"""
-    <div class="reasoning-toggle-container">
-    """, unsafe_allow_html=True)
+    # --- REPLACED: Manual live dropdown with st.expander + placeholder ---
+    exp = st.expander("💭 Thinking...", expanded=False)
+    placeholder = exp.empty()
     
-    # Create toggle for live reasoning - default to collapsed
-    col1, col2 = st.columns([1, 0.1])
-    
-    with col1:
-        live_expanded = st.session_state.show_reasoning.get(current_msg_key, False)
-        chevron = "▼" if live_expanded else "▶"
-        
-        if st.button(f"{chevron} Thinking...", 
-                   key=f"live_reasoning_toggle_{current_msg_key}",
-                   help="Click to show/hide reasoning as it develops"):
-            st.session_state.show_reasoning[current_msg_key] = not live_expanded
-            st.rerun()
-    
-    # Live reasoning content area
-    reasoning_content_container = st.empty()
-    
-    # Always build the reasoning history but only show if dropdown is open
-    for i, step in enumerate(reasoning_steps):
+    for i, step in enumerate(reasoning_steps, start=1):
         st.session_state.current_reasoning_history.append(step)
-        
-        # Only display if user has opened the dropdown
-        if st.session_state.show_reasoning.get(current_msg_key, False):
-            # Update the reasoning content with all steps accumulated so far
-            content_html = '<div class="reasoning-content">'
-            for j, hist_step in enumerate(st.session_state.current_reasoning_history, 1):
-                content_html += f"""
-                <div class="reasoning-step">
-                    <strong>Step {j}:</strong> {hist_step}
-                </div>
-                """
-            content_html += '</div>'
-            
-            reasoning_content_container.markdown(content_html, unsafe_allow_html=True)
-        
-        time.sleep(2.5)  # Time to read the reasoning step
+        # build cumulative markdown
+        md = "\n\n".join(
+            f"**Step {j}:** {s}"
+            for j, s in enumerate(st.session_state.current_reasoning_history, start=1)
+        )
+        placeholder.markdown(md)
+        time.sleep(2.5)
     
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Calculate total thinking time
-    end_time = time.time()
-    thinking_duration = int(end_time - start_time)
-    
-    # Clear the live reasoning container
-    reasoning_content_container.empty()
+    thinking_duration = int(time.time() - start_time)
+    placeholder.empty()
     
     # Get actual response from OpenAI
     try:
         stream = client.chat.completions.create(
             model="o1-mini",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
+            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
             stream=True,
         )
         
-        # Capture the response
         response_placeholder = st.empty()
         full_response = ""
         
@@ -439,19 +286,14 @@ if prompt := st.chat_input("Ask anything..."):
                 """, unsafe_allow_html=True)
         
         # Store message with reasoning and timing
-        message_data = {
+        st.session_state.messages.append({
             "role": "assistant", 
             "content": full_response, 
-            "reasoning": st.session_state.current_reasoning_history,
+            "reasoning": st.session_state.current_reasoning_history.copy(),
             "thinking_duration": thinking_duration
-        }
-        st.session_state.messages.append(message_data)
+        })
         
-        # Clean up live reasoning state
-        if current_msg_key in st.session_state.show_reasoning:
-            del st.session_state.show_reasoning[current_msg_key]
-        
-        st.rerun()
+        st.experimental_rerun()
         
     except Exception as e:
         st.error(f"Error generating response: {str(e)}")
@@ -496,3 +338,4 @@ setInterval(setupAutoResize, 500);
 setupAutoResize();
 </script>
 """, height=0)
+
