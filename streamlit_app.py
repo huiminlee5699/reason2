@@ -344,11 +344,15 @@ for i, message in enumerate(st.session_state.messages):
 # Chat input
 if prompt := st.chat_input("Ask anything..."):
     # Add user message
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    st.rerun()
-
-# Generate AI response if there's a new user message
-if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+    st.session_state.messages.append({"role": "user", "content": prompt))
+    
+    # Display the user message immediately
+    st.markdown(f"""
+    <div class="user-message">
+        {prompt}
+    </div>
+    """, unsafe_allow_html=True)
+    
     # Reset reasoning history for new conversation
     st.session_state.current_reasoning_history = []
     st.session_state.reasoning_step_counter += 1
