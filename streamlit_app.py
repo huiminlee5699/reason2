@@ -344,7 +344,7 @@ for i, message in enumerate(st.session_state.messages):
 # Chat input
 if prompt := st.chat_input("Ask anything..."):
     # Add user message
-    st.session_state.messages.append({"role": "user", "content": prompt))
+    st.session_state.messages.append({"role": "user", "content": prompt})
     
     # Display the user message immediately
     st.markdown(f"""
