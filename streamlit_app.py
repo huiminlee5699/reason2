@@ -60,16 +60,30 @@ st.markdown("""
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Remove all borders/shadows from expander */
-    [data-testid="stExpander"],
-    [data-testid="stExpanderHeader"],
-    [data-testid="stExpanderContent"] {
-        border: none !important;
-        box-shadow: none !important;
-        background-color: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
+
+      /* expander outer wrapper (header + content) */
+  [data-testid="stExpander"] > div:first-child {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* expander content area */
+  [data-testid="stExpanderContent"] {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* hide the built‑in arrow icon */
+  [data-testid="stExpanderHeader"] svg {
+    display: none !important;
+    
+  }
 </style>
 """, unsafe_allow_html=True)
 
