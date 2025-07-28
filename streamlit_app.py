@@ -365,7 +365,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     <div class="reasoning-toggle-container">
     """, unsafe_allow_html=True)
     
-    # Create toggle for live reasoning
+    # Create toggle for live reasoning - default to collapsed
     col1, col2 = st.columns([1, 0.1])
     
     with col1:
@@ -381,12 +381,13 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     # Live reasoning content area
     reasoning_content_container = st.empty()
     
-    if st.session_state.show_reasoning.get(current_msg_key, False):
-        # Show reasoning steps as they appear
-        for i, step in enumerate(reasoning_steps):
-            st.session_state.current_reasoning_history.append(step)
-            
-            # Update the reasoning content
+    # Always build the reasoning history but only show if dropdown is open
+    for i, step in enumerate(reasoning_steps):
+        st.session_state.current_reasoning_history.append(step)
+        
+        # Only display if user has opened the dropdown
+        if st.session_state.show_reasoning.get(current_msg_key, False):
+            # Update the reasoning content with all steps accumulated so far
             content_html = '<div class="reasoning-content">'
             for j, hist_step in enumerate(st.session_state.current_reasoning_history, 1):
                 content_html += f"""
@@ -397,19 +398,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             content_html += '</div>'
             
             reasoning_content_container.markdown(content_html, unsafe_allow_html=True)
-            time.sleep(2.5)  # Time to read the reasoning step
-    else:
-        # Just show thinking indicator
-        reasoning_content_container.markdown("""
-        <div class="thinking-indicator">
-            AI is thinking...
-        </div>
-        """, unsafe_allow_html=True)
         
-        # Still run through the timing but don't show steps
-        for step in reasoning_steps:
-            st.session_state.current_reasoning_history.append(step)
-            time.sleep(2.5)
+        time.sleep(2.5)  # Time to read the reasoning step
     
     st.markdown('</div>', unsafe_allow_html=True)
     
