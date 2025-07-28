@@ -71,7 +71,7 @@ st.markdown("""
         margin: 0 !important;
     }
 </style>
-""", unsafe_allow_html=False)
+""", unsafe_allow_html=True)
 
 # ─── Title ────────────────────────────────────────────────────────────────────
 st.markdown('<h1 class="main-title">What\'s on the agenda today?</h1>', unsafe_allow_html=True)
